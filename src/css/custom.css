@@ -1,32 +1,88 @@
 /**
- * Any CSS included here will be global. The classic template
- * bundles Infima by default. Infima is a CSS framework designed to
- * work well for content-centric websites.
+ * Site-wide styling, modeled on the clearsigning.org design system
+ * (same fonts, accent colors, and surface palette), with a light and a
+ * dark theme.
  */
 
-/* You can override the default Infima variables here. */
-:root {
-  --ifm-color-primary: #2e8555;
-  --ifm-color-primary-dark: #29784c;
-  --ifm-color-primary-darker: #277148;
-  --ifm-color-primary-darkest: #205d3b;
-  --ifm-color-primary-light: #33925d;
-  --ifm-color-primary-lighter: #359962;
-  --ifm-color-primary-lightest: #3cad6e;
-  --ifm-code-font-size: 95%;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+@font-face {
+  font-family: "Geist";
+  src: url("/fonts/geist-latin.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
 }
 
-/* For readability concerns, you should choose a lighter palette in dark mode. */
-[data-theme='dark'] {
-  --ifm-color-primary: #25c2a0;
-  --ifm-color-primary-dark: #21af90;
-  --ifm-color-primary-darker: #1fa588;
-  --ifm-color-primary-darkest: #1a8870;
-  --ifm-color-primary-light: #29d5b0;
-  --ifm-color-primary-lighter: #32d8b4;
-  --ifm-color-primary-lightest: #4fddbf;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+@font-face {
+  font-family: "Geist Mono";
+  src: url("/fonts/geist-mono-latin.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+:root {
+  /* clearsigning.org light palette */
+  --ifm-color-primary: #2f5fe4;
+  --ifm-color-primary-dark: #1c4fdd;
+  --ifm-color-primary-darker: #1b4ad0;
+  --ifm-color-primary-darkest: #163dab;
+  --ifm-color-primary-light: #476fe8;
+  --ifm-color-primary-lighter: #5377e9;
+  --ifm-color-primary-lightest: #7791ee;
+
+  --ifm-background-color: #ffffff;
+  --ifm-background-surface-color: #f8f9fa;
+  --ifm-font-color-base: #111318;
+  --ifm-heading-color: #111318;
+  --ifm-color-secondary-contrast-foreground: #4b5563;
+
+  --ifm-font-family-base: "Geist", "Avenir Next", "Segoe UI", -apple-system,
+    BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  --ifm-font-family-monospace: "Geist Mono", "SFMono-Regular", Menlo, Monaco,
+    Consolas, "Liberation Mono", "Courier New", monospace;
+
+  --ifm-code-font-size: 92%;
+  --ifm-global-radius: 0.5rem;
+  --ifm-navbar-shadow: none;
+  --ifm-toc-border-color: rgba(0, 0, 0, 0.06);
+  --cs-border: rgba(0, 0, 0, 0.06);
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="dark"] {
+  /* clearsigning.org dark palette */
+  --ifm-color-primary: #8aabff;
+  --ifm-color-primary-dark: #6693ff;
+  --ifm-color-primary-darker: #5487ff;
+  --ifm-color-primary-darkest: #1e63ff;
+  --ifm-color-primary-light: #aec3ff;
+  --ifm-color-primary-lighter: #c0d0ff;
+  --ifm-color-primary-lightest: #f5f8ff;
+
+  --ifm-background-color: #0a0a0b;
+  --ifm-background-surface-color: #151517;
+  --ifm-font-color-base: #f5f5f7;
+  --ifm-heading-color: #f5f5f7;
+
+  --ifm-toc-border-color: rgba(255, 255, 255, 0.08);
+  --cs-border: rgba(255, 255, 255, 0.08);
+  --docusaurus-highlighted-code-line-bg: rgba(255, 255, 255, 0.1);
+}
+
+/* Subtle borders instead of shadows, as on clearsigning.org */
+.navbar {
+  border-bottom: 1px solid var(--cs-border);
+}
+
+/* The logo mark is a dark navy square — keep it visible on the dark navbar */
+[data-theme="dark"] .navbar__logo img {
+  border-radius: 6px;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.25);
+}
+
+.footer--dark {
+  --ifm-footer-background-color: #0a0a0b;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Mermaid diagrams: let wide diagrams keep a readable size and scroll

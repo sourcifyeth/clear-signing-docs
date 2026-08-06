@@ -6,7 +6,7 @@ const config: Config = {
   title: "Clear Signing Docs",
   tagline:
     "Documentation for the ERC-7730 clear signing ecosystem: the registry, descriptors, and wallet integrations",
-  favicon: "img/favicon.ico",
+  favicon: "img/favicon.svg",
 
   future: {
     v4: true,
@@ -100,6 +100,10 @@ const config: Config = {
   themeConfig: {
     navbar: {
       title: "Clear Signing Docs",
+      logo: {
+        alt: "Clear Signing",
+        src: "img/favicon.svg",
+      },
       items: [
         {
           type: "docSidebar",
