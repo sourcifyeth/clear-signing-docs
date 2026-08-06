@@ -177,6 +177,28 @@ const config: Config = {
       minHeadingLevel: 2,
       maxHeadingLevel: 4,
     },
+    // Match the clearsigning.org palette (accent blue, light info surfaces,
+    // neutral grays). The same variables are used in light and dark mode —
+    // diagram nodes render as light "cards" on the dark background.
+    mermaid: {
+      theme: { light: "base", dark: "base" },
+      options: {
+        themeVariables: {
+          fontFamily:
+            '"Geist", "Avenir Next", "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif',
+          primaryColor: "#f0f4ff",
+          primaryTextColor: "#111318",
+          primaryBorderColor: "#6b93ff",
+          secondaryColor: "#f8f9fa",
+          tertiaryColor: "#ffffff",
+          lineColor: "#6e6e73",
+          textColor: "#111318",
+          clusterBkg: "#f8f9fa",
+          clusterBorder: "#c9ced6",
+          edgeLabelBackground: "#ffffff",
+        },
+      },
+    },
   } satisfies Preset.ThemeConfig,
 };
 
