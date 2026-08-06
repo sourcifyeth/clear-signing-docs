@@ -7,6 +7,10 @@ title: Creating a descriptor
 
 This guide walks you through writing an ERC-7730 clear signing descriptor for your protocol, testing it, and submitting it to the [registry](https://github.com/ethereum/clear-signing-erc7730-registry). It follows the same flow as the [ethereum.org tutorial](https://ethereum.org/developers/tutorials/clear-signing/), condensed and updated for the v2 format used by the registry.
 
+:::tip
+Describing an ERC-20 token or its permit? There's a [dedicated page](./erc20-tokens-and-permits.md) for that — including when a token doesn't need a descriptor at all.
+:::
+
 ## Before you start
 
 - **Verify your contracts on [Sourcify](https://sourcify.dev)** (or Etherscan). The registry CI fetches your reference ABI from there to validate the descriptor — an unverified contract means weaker validation and a harder review.

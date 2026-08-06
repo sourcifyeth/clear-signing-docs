@@ -25,6 +25,7 @@ An onchain registry is planned; until then, the GitHub repository with its CI an
 | Section | For | What you'll find |
 |---|---|---|
 | [Creating a descriptor](./descriptors/creating-a-descriptor.md) | Protocol teams | How to write an ERC-7730 descriptor, test it, and submit it to the registry |
+| [ERC-20 tokens & permits](./descriptors/erc20-tokens-and-permits.md) | Token teams | When tokens need a descriptor, unlimited approvals, ERC-2612 permit descriptors |
 | [Registry CI checks](./registry/ci-checks.md) | Contributors & reviewers | Every automated check that runs on a registry pull request, in detail |
 | [Reviewing pull requests](./registry/reviewing-prs.md) | Reviewers & maintainers | The manual review checklist used until the onchain registry exists |
 | [Wallet integration](./wallets/integration.md) | Wallet developers | How to render clear signing screens using the available SDKs |
