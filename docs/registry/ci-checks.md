@@ -71,7 +71,7 @@ Collects the changed descriptor files (`registry/**/eip712-*.json` and `registry
 erc7730 lint <changed files> --gha
 ```
 
-The registry uses the **v2 descriptor format**, so the v2 lint pipeline applies (auto-detected from the descriptors' `$schema`). Errors fail the check; warnings are annotated on the PR but do not fail it.
+The registry uses the **v2 descriptor format**, so the v2 lint pipeline applies (auto-detected from the descriptors' `$schema`). The linter emits findings at two severities: **errors fail the check**, while **warnings** are annotated on the PR but let it pass. Each check below states which one it produces.
 
 ### What the linter checks in detail
 
@@ -79,13 +79,13 @@ The registry uses the **v2 descriptor format**, so the v2 lint pipeline applies 
 
 #### 0. Parsing and resolution
 
-Before any linter runs, the file must **load into the v2 descriptor model** (structural validation, stricter than the JSON schema alone) and **resolve**: `$ref` includes and shared/common files are inlined, constants substituted, and display paths parsed. Errors here (invalid function signatures in format keys, unresolvable references, malformed paths) fail the lint immediately.
+Before any linter runs, the file must **load into the v2 descriptor model** (structural validation, stricter than the JSON schema alone) and **resolve**: `$ref` includes and shared/common files are inlined, constants substituted, and display paths parsed. Findings here (invalid function signatures in format keys, unresolvable references, malformed paths) are **errors — they fail CI** immediately.
 
 #### 1. Display field validation (`ValidateDisplayFieldsLinter`)
 
-For **calldata (contract) descriptors**, the linter fetches the contract's reference ABI from **Sourcify** (or Etherscan as fallback) for the declared deployments, then cross-checks the descriptor against it:
+For **calldata (contract) descriptors**, the linter fetches the contract's reference ABI from **Sourcify** (or Etherscan as fallback) for the declared deployments, then cross-checks the descriptor against it. Only the first finding is an error; the rest are warnings:
 
-- **Error — invalid display field:** a display field's `path` does not exist among the function's ABI parameters. This catches typos and stale descriptors.
+- **Error (fails CI) — invalid display field:** a display field's `path` does not exist among the function's ABI parameters. This catches typos and stale descriptors.
 - **Warning — missing display field:** an ABI parameter has no display field. Every parameter should either be displayed or consciously excluded.
 - **Warning — unknown selector:** the descriptor formats a function that does not exist in the reference ABI.
 - **Warning — missing display format:** a function exists in the ABI but the descriptor defines no format for it (selector exhaustiveness — wallets fall back to blind signing for uncovered selectors).
@@ -104,9 +104,11 @@ For **EIP-712 descriptors**, the `display.formats` keys must be exact [`encodeTy
 - every struct defined in the key is actually referenced from the primary type;
 - referenced struct definitions are appended to the primary type **sorted by name**.
 
+All findings from this linter are **errors — they fail CI**: a malformed key is a descriptor that will never match anything.
+
 #### 3. Transaction type classification (`ClassifyTransactionTypeLinter`)
 
-A safety net for common risky transaction types. The linter classifies the descriptor — for EIP-712, a format key containing `permit` marks it as a **Permit**; for contracts, classification runs on the fetched ABI — and then checks that the fields users need to see are actually displayed. For a Permit it warns if no **spender**, **amount**, or **expiration/deadline** field is displayed.
+A safety net for common risky transaction types. The linter classifies the descriptor — for EIP-712, a format key containing `permit` marks it as a **Permit**; for contracts, classification runs on the fetched ABI — and then checks that the fields users need to see are actually displayed. For a Permit it flags a missing **spender**, **amount**, or **expiration/deadline** field. All findings are **warnings** — they don't fail CI, but expect reviewers to ask about them.
 
 #### 4. Display length limits (`ValidateMaxLengthLinter`)
 
