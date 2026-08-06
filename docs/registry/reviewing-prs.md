@@ -57,6 +57,8 @@ This is a plausibility read, not verification against the contract source — th
 
 [Attestations](../descriptors/creating-a-descriptor.md#attestations) bind to the exact content of a descriptor — any change to the file invalidates them. If a descriptor already has attestations (files under `registry/<entity_name>/sigs/`), **do not accept changes to it**. Ask the submitter to add a **new descriptor file** instead (the filename carries the version): the existing attestations stay valid for the old descriptor, and the new one can be attested later.
 
+This applies **transitively to shared files**: `common-*.json` files and the `ercs/` templates are inlined into descriptors via `includes`, so editing them silently changes every descriptor that includes them — attested ones too, and no CI check catches it. Reject shared-file edits that would alter an attested descriptor; here as well, the change belongs in a new shared file (or a new descriptor version) instead.
+
 ### 7. No descriptor or index entry of another project is overwritten
 
 The generated index files map each `(chainId, address)` to a descriptor, so two descriptors claiming the same deployment collide — a malicious or careless PR could effectively hijack how another project's contract is displayed.
