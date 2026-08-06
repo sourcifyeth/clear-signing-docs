@@ -32,6 +32,10 @@ There are no tests; a clean `npm run build` is the validation bar. The build fai
 - Mermaid diagram colors come from `themeConfig.mermaid.options.themeVariables` in `docusaurus.config.ts`. The same variables apply to light **and** dark mode — nodes intentionally render as light "cards" on the dark background, so pick colors that work on both.
 - Diagram sizing: `.docusaurus-mermaid-container` CSS gives SVGs a min-width with horizontal scrolling. Author flowcharts narrow (roughly two columns of subgraphs max) or they become unreadable.
 
+## Pending work
+
+- The CI pipeline diagram on `docs/registry/ci-checks.md` will be reworked once the registry's CI jobs are updated. When that happens: drop the "Same-repo PR?" fork-gate decision box and simply assume a fork PR in the flow, and improve how the diagram renders on mobile (it still overflows awkwardly on small screens).
+
 ## Content policies
 
 - The registry's AI analyzer workflow (`analyze.yml`) is deliberately **not** documented — don't re-add it.
