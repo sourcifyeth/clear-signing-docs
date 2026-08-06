@@ -24,12 +24,19 @@ Descriptors state who the protocol **owner** is (`metadata.owner`); the person s
 
 ### 2. Are all CI checks green?
 
-Nothing gets merged with failing checks. In particular:
+Nothing gets merged with failing checks. In particular, **validate descriptors** and **validate JSON schemas** must pass — see [CI checks](./ci-checks.md) for what they cover.
 
-- **validate descriptors** and **validate JSON schemas** must pass — see [CI checks](./ci-checks.md) for what they cover.
-- Also skim CI **warnings** (annotations on the PR): missing display fields, uncovered selectors, or truncation warnings don't fail CI but often point at real gaps a reviewer should question.
+### 3. Do the linter warnings look fine?
 
-### 3. Are tests there, and did they run successfully?
+[Warnings don't fail CI](./ci-checks.md#what-the-linter-checks-in-detail), but they are part of the review: open the lint annotations on the PR and check whether any of them looks problematic rather than intentional.
+
+- **Missing display field / missing display format** — fine when a parameter or function is consciously excluded, problematic when it leaves a value-bearing parameter or a common user-facing function blind-signed.
+- **Unknown selector** — may indicate a stale descriptor or a wrong deployment address.
+- **Truncation warnings** — labels or intents that will be cut off on hardware wallet screens.
+
+Ask the submitter about any warning that looks unintentional.
+
+### 4. Are tests there, and did they run successfully?
 
 Every added or changed descriptor must come with a `testsv2/<descriptor-name>.tests.json` file — the [Clear Signing Tests workflow](./ci-checks.md#clear-signing-tests-the-testing-workflow) fails without it.
 
@@ -37,7 +44,7 @@ Every added or changed descriptor must come with a `testsv2/<descriptor-name>.te
 - Check the results comment: every test case must pass on all reference implementations (all ✅ in the table).
 - Check the test cases themselves: do they cover each function/message the descriptor formats? Do the `expected` blocks actually describe what the transaction does? A test that expects a wrong rendering is worse than no test.
 
-### 4. No descriptor or index entry of another project is overwritten
+### 5. No descriptor or index entry of another project is overwritten
 
 The generated index files map each `(chainId, address)` to a descriptor, so two descriptors claiming the same deployment collide — a malicious or careless PR could effectively hijack how another project's contract is displayed.
 
@@ -49,7 +56,7 @@ The generated index files map each `(chainId, address)` to a descriptor, so two 
 A dedicated CI check that fails when a PR's descriptors would overwrite another descriptor's index entry is planned. Until it exists, this is a manual review step.
 :::
 
-### 5. Registry structure is kept
+### 6. Registry structure is kept
 
 The [repository layout](https://github.com/ethereum/clear-signing-erc7730-registry#registry-structure) is directory-based, and PRs must follow it:
 
