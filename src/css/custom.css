@@ -85,6 +85,30 @@
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* Loading state of client-side fetched markdown (RemoteMarkdown) */
+.remote-markdown-loading {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 3rem 0;
+  color: var(--ifm-color-secondary-contrast-foreground, inherit);
+}
+
+.remote-markdown-spinner {
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid var(--cs-border);
+  border-top-color: var(--ifm-color-primary);
+  border-radius: 50%;
+  animation: remote-markdown-spin 0.8s linear infinite;
+}
+
+@keyframes remote-markdown-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* Mermaid diagrams: let wide diagrams keep a readable size and scroll
    horizontally instead of shrinking to fit (important on mobile). */
 .docusaurus-mermaid-container {

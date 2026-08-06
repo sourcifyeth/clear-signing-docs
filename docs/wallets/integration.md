@@ -39,7 +39,7 @@ Key concepts, common to all SDKs:
 
 For browser-extension, web, Node, and React Native wallets. The full integration guide is rendered in these docs:
 
-**→ [TypeScript SDK integration guide](./typescript-sdk.md)**
+**→ [TypeScript SDK integration guide](./typescript-sdk.mdx)**
 
 Source: [sourcifyeth/clear-signing](https://github.com/sourcifyeth/clear-signing).
 

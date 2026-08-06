@@ -35,45 +35,6 @@ const config: Config = {
     locales: ["en"],
   },
 
-  plugins: [
-    [
-      "docusaurus-plugin-remote-content",
-      {
-        // Fetches the wallet integration guide of the TypeScript SDK from
-        // GitHub at build time so it is always in sync with the source repo.
-        name: "sourcify-ts-sdk-guide",
-        sourceBaseUrl:
-          "https://raw.githubusercontent.com/sourcifyeth/clear-signing/main/",
-        outDir: "docs/wallets",
-        documents: ["GUIDE.md"],
-        modifyContent(filename: string, content: string) {
-          if (!filename.includes("GUIDE")) {
-            return undefined;
-          }
-          // Rewrite repo-relative links (e.g. src/types.ts, DECRYPTION.md) to
-          // absolute GitHub URLs so they keep working on the docs site.
-          const rewritten = content.replace(
-            /\]\((?!https?:\/\/|#|mailto:)([^)]+)\)/g,
-            "](https://github.com/sourcifyeth/clear-signing/blob/main/$1)"
-          );
-          return {
-            filename: "typescript-sdk.md",
-            content: [
-              "---",
-              "title: TypeScript SDK",
-              "sidebar_label: TypeScript SDK",
-              "sidebar_position: 2",
-              "custom_edit_url: https://github.com/sourcifyeth/clear-signing/blob/main/GUIDE.md",
-              "---",
-              "",
-              rewritten,
-            ].join("\n"),
-          };
-        },
-      },
-    ],
-  ],
-
   presets: [
     [
       "classic",
