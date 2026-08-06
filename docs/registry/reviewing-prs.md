@@ -71,13 +71,18 @@ The generated index files map each `(chainId, address)` to a descriptor, so two 
 A dedicated CI check that fails when a PR's descriptors would overwrite another descriptor's index entry is planned. Until it exists, this is a manual review step.
 :::
 
-### 8. Registry structure is kept
+### 8. The index files are not touched
+
+`index.calldata.json` and `index.eip712.json` are **generated** — CI regenerates them from the descriptors after the merge, so a descriptor PR should not modify them at all. Question any index diff you see.
+
+The one exception: when a **new descriptor version replaces an attested descriptor** (see [item 6](#6-attested-descriptors-are-not-modified)), the index entry for the affected deployments has to switch from the old file to the new one — changing those specific entries is safe and expected.
+
+### 9. Registry structure is kept
 
 The [repository layout](https://github.com/ethereum/clear-signing-erc7730-registry#registry-structure) is directory-based, and PRs must follow it:
 
 - One entity per PR, all files inside `registry/<entity_name>/`.
 - Descriptors named `calldata-<ContractName>.json` / `eip712-<MessageName>.json`; shared definitions as `common-*.json` (never with a `calldata`/`eip712` prefix); tests under `testsv2/`.
-- `index.calldata.json` and `index.eip712.json` are **generated** — a PR must not edit them by hand.
 
 ## Optional asks (nice-to-have, not blocking)
 
