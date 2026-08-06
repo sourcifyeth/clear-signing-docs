@@ -9,6 +9,8 @@ Until the **onchain registry** exists, the GitHub pull request review is the tru
 
 This page is the working checklist for reviewers and maintainers. It complements — not replaces — the automated [CI checks](./ci-checks.md).
 
+A PR review is deliberately **short and basic**: a plausibility and consistency check of who is submitting, whether structure, CI, and tests are in order, and whether anything looks off. It is *not* a security audit — source-level verification of descriptor accuracy is the job of [auditors](https://github.com/ethereum/clear-signing-erc7730-registry/blob/master/auditors/README.md), who attest descriptors after the merge. If you notice something deeper during review, leave a note for the auditors in the PR rather than blocking the merge on a full investigation.
+
 ## Review checklist
 
 ### 1. Is the PR author associated with the project?
