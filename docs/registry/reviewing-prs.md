@@ -44,7 +44,16 @@ Every added or changed descriptor must come with a `testsv2/<descriptor-name>.te
 - Check the results comment: every test case must pass on all reference implementations (all ✅ in the table).
 - Check the test cases themselves: do they cover each function/message the descriptor formats? Do the `expected` blocks actually describe what the transaction does? A test that expects a wrong rendering is worse than no test.
 
-### 5. No descriptor or index entry of another project is overwritten
+### 5. Do intents and hidden fields pass a sanity read?
+
+One quick human pass over `display.formats` — minutes of work that catches the most dangerous descriptor mistakes:
+
+- The `intent` says what the function actually does, in user terms. An approval must read as an approval; vague or technical intents ("Execute", the bare function name) defeat the purpose of clear signing.
+- Fields marked `visible: "never"` are plausibly irrelevant to the signer (a nonce, the signer's own address). Value-bearing parameters — amounts, spenders, recipients, deadlines — must never be hidden.
+
+This is a plausibility read, not verification against the contract source — that remains the auditors' job.
+
+### 6. No descriptor or index entry of another project is overwritten
 
 The generated index files map each `(chainId, address)` to a descriptor, so two descriptors claiming the same deployment collide — a malicious or careless PR could effectively hijack how another project's contract is displayed.
 
@@ -56,7 +65,7 @@ The generated index files map each `(chainId, address)` to a descriptor, so two 
 A dedicated CI check that fails when a PR's descriptors would overwrite another descriptor's index entry is planned. Until it exists, this is a manual review step.
 :::
 
-### 6. Registry structure is kept
+### 7. Registry structure is kept
 
 The [repository layout](https://github.com/ethereum/clear-signing-erc7730-registry#registry-structure) is directory-based, and PRs must follow it:
 
