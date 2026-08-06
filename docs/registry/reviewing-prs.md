@@ -53,7 +53,11 @@ One quick human pass over `display.formats` — minutes of work that catches the
 
 This is a plausibility read, not verification against the contract source — that remains the auditors' job.
 
-### 6. No descriptor or index entry of another project is overwritten
+### 6. Attested descriptors are not modified
+
+[Attestations](../descriptors/creating-a-descriptor.md#attestations) bind to the exact content of a descriptor — any change to the file invalidates them. If a descriptor already has attestations (files under `registry/<entity_name>/sigs/`), **do not accept changes to it**. Ask the submitter to add a **new descriptor file** instead (the filename carries the version): the existing attestations stay valid for the old descriptor, and the new one can be attested later.
+
+### 7. No descriptor or index entry of another project is overwritten
 
 The generated index files map each `(chainId, address)` to a descriptor, so two descriptors claiming the same deployment collide — a malicious or careless PR could effectively hijack how another project's contract is displayed.
 
@@ -65,7 +69,7 @@ The generated index files map each `(chainId, address)` to a descriptor, so two 
 A dedicated CI check that fails when a PR's descriptors would overwrite another descriptor's index entry is planned. Until it exists, this is a manual review step.
 :::
 
-### 7. Registry structure is kept
+### 8. Registry structure is kept
 
 The [repository layout](https://github.com/ethereum/clear-signing-erc7730-registry#registry-structure) is directory-based, and PRs must follow it:
 
