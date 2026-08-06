@@ -28,3 +28,17 @@
   --ifm-color-primary-lightest: #4fddbf;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
 }
+
+/* Mermaid diagrams: let wide diagrams keep a readable size and scroll
+   horizontally instead of shrinking to fit (important on mobile). */
+.docusaurus-mermaid-container {
+  overflow-x: auto;
+  margin-bottom: var(--ifm-leading);
+}
+
+.docusaurus-mermaid-container > svg {
+  min-width: 660px;
+  max-width: 900px !important;
+  display: block;
+  margin: 0 auto;
+}

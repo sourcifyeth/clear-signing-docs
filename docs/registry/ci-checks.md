@@ -11,34 +11,34 @@ Every pull request to the [ERC-7730 registry](https://github.com/ethereum/clear-
 
 ```mermaid
 flowchart TD
-    PR([Pull request opened / updated]) --> LBL
+    PR([Pull request opened / updated])
 
-    subgraph always ["Runs on every PR"]
+    subgraph static ["Static checks"]
+        direction TB
         LBL["🏷️ Pull request labels<br/><small>auto-label by changed paths,<br/>at least one label required</small>"]
-    end
-
-    PR --> DESC
-    subgraph desc ["Runs when descriptors change"]
         DESC["🔎 Validate descriptors<br/><small>erc7730 lint on changed files</small>"]
         SCHEMA["🔎 Validate JSON schemas<br/><small>check-jsonschema against<br/>erc7730-v2 / tests schemas</small>"]
-        DESC ~~~ SCHEMA
+        LBL ~~~ DESC ~~~ SCHEMA
     end
-    PR --> SCHEMA
 
-    PR --> GATE
     subgraph tests ["Clear Signing Tests"]
+        direction TB
         GATE{"Same-repo PR?<br/><small>fork PRs need the<br/><code>run-tests</code> label</small>"}
-        GATE -- "no label yet" --> WAIT["💬 Comment:<br/>waiting for maintainer approval"]
+        GATE -- "no label yet" --> WAIT["💬 Comment: waiting for<br/>maintainer approval"]
         GATE -- "allowed" --> DETECT{"testsv2 files found<br/>for changed descriptors?"}
-        DETECT -- no --> MISSING["❌ Comment + check fails:<br/>missing testsv2 file"]
-        DETECT -- yes --> RUNTS["Sourcify TypeScript runner"]
-        DETECT -- yes --> RUNRS["Rust runner"]
-        RUNTS --> RESULTS["💬 Results table comment<br/>any non-pass fails the check"]
+        DETECT -- "no" --> MISSING["❌ Comment + check fails:<br/>missing testsv2 file"]
+        DETECT -- "yes" --> RUNTS["Sourcify TypeScript<br/>runner"]
+        DETECT -- "yes" --> RUNRS["Rust runner"]
+        RUNTS --> RESULTS["💬 Results table comment<br/><small>any non-pass fails the check</small>"]
         RUNRS --> RESULTS
     end
 
+    PR --> LBL
+    PR --> GATE
     RESULTS --> MERGE([All green + review → merge])
-    MERGE --> POST["After merge on master:<br/>full registry lint · index regeneration ·<br/>weekly auto-format · spec sync"]
+    SCHEMA ~~~ MERGE
+    static --> MERGE
+    MERGE --> POST["After merge on master:<br/><small>full registry lint · index regeneration ·<br/>weekly auto-format · spec sync</small>"]
 ```
 
 ## 🏷️ Pull request labels
