@@ -166,7 +166,6 @@ const config: Config = {
           ],
         },
       ],
-      copyright: `Content is in the public domain (CC0). Built with Docusaurus.`,
     },
     prism: {
       theme: prismThemes.github,
