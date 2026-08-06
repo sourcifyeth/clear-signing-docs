@@ -16,7 +16,7 @@ npm run build    # static output in build/
 npm run serve    # preview the production build
 ```
 
-The wallet integration guide for the TypeScript SDK (`docs/wallets/typescript-sdk.md`) is **fetched at build time** from [`GUIDE.md` in sourcifyeth/clear-signing](https://github.com/sourcifyeth/clear-signing/blob/main/GUIDE.md) via `docusaurus-plugin-remote-content` — don't edit it here, and note that building requires network access to raw.githubusercontent.com.
+Two pages render remote GitHub documents **in the browser at page-load time** (via the `RemoteMarkdown` component in `src/components/`): the TypeScript SDK guide (`GUIDE.md` from sourcifyeth/clear-signing) and the auditor guide (`auditors/README.md` from the registry). Their content is not part of the build — to change it, edit the source repositories.
 
 ## Structure
 

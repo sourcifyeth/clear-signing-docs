@@ -142,7 +142,7 @@ CI will [lint your descriptors, validate schemas, and run your tests against ref
 
 Getting your descriptor merged is not the end of the trust chain: **wallets must only use attested descriptors**. An attestation is a cryptographic statement by an independent auditor that they reviewed the exact descriptor version — a merged but unattested descriptor should not be rendered to users.
 
-Auditors follow a five-step review before signing (see the [auditor guide](https://github.com/ethereum/clear-signing-erc7730-registry/blob/master/auditors/README.md)):
+Auditors follow a five-step review before signing (see [What audits do](../auditors/what-audits-do.md)):
 
 1. **Project check** — the protocol's purpose is confirmed and the submitter is plausibly affiliated with it.
 2. **Contract verification** — the contract is verified on [Sourcify](https://repo.sourcify.dev), and the address and ABI match the descriptor. Unverified contracts are not signed.
@@ -157,4 +157,4 @@ The mechanics:
 - Auditors are listed under [`auditors/`](https://github.com/ethereum/clear-signing-erc7730-registry/tree/master/auditors) with a profile (`id`, `name`, optional `ens` and `organization`); wallets resolve auditor identity via ENS and check revocations via EAS.
 - Attestations bind to the exact reviewed content: a new descriptor version requires a new attestation, existing attestations are never modified, and retractions happen via an on-chain EAS revocation. If an auditor finds issues, they don't sign — they open a GitHub issue instead.
 
-If you want your descriptor attested, or want to become an auditor, start with the [auditor guide](https://github.com/ethereum/clear-signing-erc7730-registry/blob/master/auditors/README.md).
+If you want your descriptor attested, or want to become an auditor, start with the [auditor guide](../auditors/auditor-guide.mdx).

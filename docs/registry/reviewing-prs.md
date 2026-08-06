@@ -9,7 +9,7 @@ Until the **onchain registry** exists, the GitHub pull request review is the tru
 
 This page is the working checklist for reviewers and maintainers. It complements — not replaces — the automated [CI checks](./ci-checks.md).
 
-A PR review is deliberately **short and basic**: a plausibility and consistency check of who is submitting, whether structure, CI, and tests are in order, and whether anything looks off. It is *not* a security audit — source-level verification of descriptor accuracy is the job of [auditors](https://github.com/ethereum/clear-signing-erc7730-registry/blob/master/auditors/README.md), who attest descriptors after the merge. If you notice something deeper during review, leave a note for the auditors in the PR rather than blocking the merge on a full investigation.
+A PR review is deliberately **short and basic**: a plausibility and consistency check of who is submitting, whether structure, CI, and tests are in order, and whether anything looks off. It is *not* a security audit — source-level verification of descriptor accuracy is the job of [auditors](../auditors/what-audits-do.md), who attest descriptors after the merge. If you notice something deeper during review, leave a note for the auditors in the PR rather than blocking the merge on a full investigation.
 
 ## Review checklist
 
@@ -94,4 +94,4 @@ Where it makes sense, ask submitters for these improvements — they're optional
 
 ## Deeper review and attestations
 
-For attestation-grade review — verifying the descriptor against verified source code, checking intent mutability through proxies and mutable state, and publishing a signed EAS attestation — see the registry's [auditor guide](https://github.com/ethereum/clear-signing-erc7730-registry/blob/master/auditors/README.md) and the [attestations section](../descriptors/creating-a-descriptor.md#attestations) of the descriptor tutorial. Regular PR review keeps the registry consistent; attestations add the cryptographic trust layer wallets can build policy on.
+For attestation-grade review — verifying the descriptor against verified source code, checking intent mutability through proxies and mutable state, and publishing a signed EAS attestation — see [What audits do](../auditors/what-audits-do.md) and the [auditor guide](../auditors/auditor-guide.mdx). Regular PR review keeps the registry consistent; attestations add the cryptographic trust layer wallets can build policy on.
