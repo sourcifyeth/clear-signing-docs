@@ -47,6 +47,20 @@ flowchart TD
 
 Labels are applied automatically based on which paths the PR touches (`descriptors`, `specifications`, `documentation`, `ci`, `tools`), and the check requires **at least one** of these labels to be present. For a typical descriptor submission you don't need to do anything — changing files under `registry/` gets you the `descriptors` label automatically.
 
+## 🔎 Validate JSON schemas
+
+*Workflow: `pull_request.yml` → job `validate JSON schemas`*
+
+Every changed JSON file under `registry/` and `ercs/` is validated with [`check-jsonschema`](https://check-jsonschema.readthedocs.io/) against the right schema:
+
+| File | Schema |
+|---|---|
+| Descriptors and shared/common files | `specs/erc7730-v2.schema.json` (or the file's own relative `$schema` if it resolves) |
+| `testsv2/*.tests.json` | `specs/erc7730-tests-v2.schema.json` |
+| legacy `tests/*.tests.json` | `specs/erc7730-tests.schema.json` |
+
+This is a pure structural check — it catches missing required properties, wrong types, and typos in field names before the semantic linting even matters.
+
 ## 🔎 Validate descriptors (linting)
 
 *Workflow: `pull_request.yml` → job `validate descriptors`*
@@ -115,20 +129,6 @@ Don't wait for CI — validate before you push:
 pip install erc7730          # requires Python 3.12+, or: uvx erc7730 ...
 erc7730 lint registry/<entity>/calldata-MyContract.json
 ```
-
-## 🔎 Validate JSON schemas
-
-*Workflow: `pull_request.yml` → job `validate JSON schemas`*
-
-Every changed JSON file under `registry/` and `ercs/` is validated with [`check-jsonschema`](https://check-jsonschema.readthedocs.io/) against the right schema:
-
-| File | Schema |
-|---|---|
-| Descriptors and shared/common files | `specs/erc7730-v2.schema.json` (or the file's own relative `$schema` if it resolves) |
-| `testsv2/*.tests.json` | `specs/erc7730-tests-v2.schema.json` |
-| legacy `tests/*.tests.json` | `specs/erc7730-tests.schema.json` |
-
-This is a pure structural check — it catches missing required properties, wrong types, and typos in field names before the semantic linting even matters.
 
 ## Clear Signing Tests (the testing workflow)
 
