@@ -55,8 +55,9 @@ The same Rust engine also runs as one of the reference test runners in the [regi
 
 ## Display recommendations
 
-Whichever SDK you use, ERC-7730 recommends:
+Whichever SDK you use:
 
-1. **Prefer the interpolated intent** — a single substituted sentence like *"Approve 1,000 USDC for Uniswap V3"* — with the labeled fields available for full context. Fall back to `intent` + fields when no interpolated intent is available.
-2. **Surface warnings.** Unknown token, unknown address, no descriptor matched — these are the cases where users get phished. Make degraded output look degraded.
-3. **Show provenance where it helps** — the descriptor's `owner`/`contractName` ("Interacting with Uniswap V3") gives users an anchor for *who* they are dealing with.
+1. **Only use attested descriptors.** Wallets must only render descriptors that carry a valid auditor [attestation](../descriptors/creating-a-descriptor.md#attestations) — resolve the attestation and revocation state (via EAS) before treating a descriptor as trustworthy, and fall back to your degraded-output path otherwise.
+2. **Prefer the interpolated intent** — a single substituted sentence like *"Approve 1,000 USDC for Uniswap V3"* — with the labeled fields available for full context. Fall back to `intent` + fields when no interpolated intent is available.
+3. **Surface warnings.** Unknown token, unknown address, no descriptor matched — these are the cases where users get phished. Make degraded output look degraded.
+4. **Show provenance where it helps** — the descriptor's `owner`/`contractName` ("Interacting with Uniswap V3") gives users an anchor for *who* they are dealing with.

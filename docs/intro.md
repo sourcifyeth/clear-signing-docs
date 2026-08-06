@@ -16,7 +16,7 @@ When a wallet asks a user to sign a transaction or an [EIP-712](https://eips.eth
 
 ## The registry
 
-Descriptors are collected in the community-maintained **[ERC-7730 registry](https://github.com/ethereum/clear-signing-erc7730-registry)** on GitHub. Anyone can submit descriptors for a protocol through a pull request; CI validates them, reference implementations run test cases against them, and reviewers and auditors provide an additional layer of trust — including cryptographic [attestations](./descriptors/creating-a-descriptor.md#attestations). Wallets and SDKs consume the registry through generated index files, without cloning the whole repository.
+Descriptors are collected in the community-maintained **[ERC-7730 registry](https://github.com/ethereum/clear-signing-erc7730-registry)** on GitHub. Anyone can submit descriptors for a protocol through a pull request; CI validates them, reference implementations run test cases against them, and independent auditors publish cryptographic [attestations](./descriptors/creating-a-descriptor.md#attestations) of reviewed descriptors — wallets must only use attested descriptors. Wallets and SDKs consume the registry through generated index files, without cloning the whole repository.
 
 An onchain registry is planned; until then, the GitHub repository with its CI and review process is the canonical source.
 

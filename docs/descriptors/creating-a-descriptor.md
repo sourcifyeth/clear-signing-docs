@@ -136,13 +136,21 @@ CI will [lint your descriptors, validate schemas, and run your tests against ref
 
 ## Attestations
 
-Merged descriptors can be **attested**: independent auditors review a descriptor in depth (project association, contract verification on Sourcify, descriptor accuracy against the verified source, intent mutability through proxies/mutable state, test validation) and publish a signed [EAS](https://attest.org) attestation of the exact descriptor version they reviewed.
+Getting your descriptor merged is not the end of the trust chain: **wallets must only use attested descriptors**. An attestation is a cryptographic statement by an independent auditor that they reviewed the exact descriptor version — a merged but unattested descriptor should not be rendered to users.
 
-How it works, briefly:
+Auditors follow a five-step review before signing (see the [auditor guide](https://github.com/ethereum/clear-signing-erc7730-registry/blob/master/auditors/README.md)):
 
-- The attestation signs the **descriptor hash** — `keccak256` of the [RFC 8785](https://www.rfc-editor.org/rfc/rfc8785) canonicalized descriptor JSON (ERC-8176 schema), computed with `clearsig descriptor-hash <file>`.
+1. **Project check** — the protocol's purpose is confirmed and the submitter is plausibly affiliated with it.
+2. **Contract verification** — the contract is verified on [Sourcify](https://repo.sourcify.dev), and the address and ABI match the descriptor. Unverified contracts are not signed.
+3. **Descriptor accuracy** — parameter names, types, ordering, and selectors match the ABI; intents reflect the real user impact; approvals, transfers, and privileged actions are correctly flagged.
+4. **Intent mutability** — the displayed intent cannot silently diverge from the executed behavior: proxy implementations and mutable state the intent depends on must be pinned via the descriptor's `proxy` / `stateRefs` preconditions, and functions whose displayed intent depends on state that v2 cannot express (time-based branches, dynamic call resolution, …) must be omitted from `display.formats`.
+5. **Tester validation** — sample transactions are run through the descriptor to confirm the rendered output is correct and unambiguous.
+
+The mechanics:
+
+- The auditor creates an **offchain [EAS](https://attest.org) attestation** (ERC-8176 schema) over the **descriptor hash** — `keccak256` of the [RFC 8785](https://www.rfc-editor.org/rfc/rfc8785) canonicalized descriptor JSON, computed with `clearsig descriptor-hash <file>`.
 - The signed attestation JSON is submitted to the registry at `registry/<entity_name>/sigs/<descriptor-name>.eip155-1-0xAuditorAddress.json`.
 - Auditors are listed under [`auditors/`](https://github.com/ethereum/clear-signing-erc7730-registry/tree/master/auditors) with a profile (`id`, `name`, optional `ens` and `organization`); wallets resolve auditor identity via ENS and check revocations via EAS.
-- A new descriptor version requires a new attestation — attestations bind to the exact reviewed content.
+- Attestations bind to the exact reviewed content: a new descriptor version requires a new attestation, existing attestations are never modified, and retractions happen via an on-chain EAS revocation. If an auditor finds issues, they don't sign — they open a GitHub issue instead.
 
-Wallets can use these attestations as trust signals: a descriptor with attestations from independent auditors can be rendered with more confidence than an unreviewed one. If you want your descriptor attested, or want to become an auditor, start with the [auditor guide](https://github.com/ethereum/clear-signing-erc7730-registry/blob/master/auditors/README.md).
+If you want your descriptor attested, or want to become an auditor, start with the [auditor guide](https://github.com/ethereum/clear-signing-erc7730-registry/blob/master/auditors/README.md).
