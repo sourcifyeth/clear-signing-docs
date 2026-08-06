@@ -132,7 +132,7 @@ Open a PR against the registry. Requirements:
 - Every added/changed descriptor has its `testsv2/` file.
 - Don't touch the generated `index.calldata.json` / `index.eip712.json` — CI regenerates them after merge.
 
-CI will [lint your descriptors, validate schemas, run your tests against reference implementations, and run an AI analysis](../registry/ci-checks.md). If you submit from a fork, a maintainer needs to add the `run-tests` label before the tests execute. Reviewers then check the PR against the [review guidelines](../registry/reviewing-prs.md) — including that you are plausibly associated with the project you're submitting for.
+CI will [lint your descriptors, validate schemas, and run your tests against reference implementations](../registry/ci-checks.md). If you submit from a fork, a maintainer needs to add the `run-tests` label before the tests execute. Reviewers then check the PR against the [review guidelines](../registry/reviewing-prs.md) — including that you are plausibly associated with the project you're submitting for.
 
 ## Attestations
 

@@ -37,14 +37,7 @@ flowchart TD
         RUNRS --> RESULTS
     end
 
-    PR --> AN
-    subgraph analyze ["AI analysis (calldata descriptors)"]
-        AN["🔍 ERC-7730 Analyzer<br/><small>LLM-based review of each<br/>changed calldata descriptor</small>"]
-        AN --> ANR["💬 Report comment<br/>critical issues block merge"]
-    end
-
     RESULTS --> MERGE([All green + review → merge])
-    ANR --> MERGE
     MERGE --> POST["After merge on master:<br/>full registry lint · index regeneration ·<br/>weekly auto-format · spec sync"]
 ```
 
@@ -101,20 +94,6 @@ The workflow has three stages:
 :::note
 A third set of runners — Ledger device tests producing device screenshots — exists in the workflow but is currently disabled because it depends on a private Ledger repository. The Sourcify and Rust runners cover clear-signing tests in the meantime.
 :::
-
-## AI analysis
-
-*Workflow: `analyze.yml`*
-
-When a PR that changes `calldata-*.json` descriptors is marked ready for review (or updated), each changed descriptor is sent to the **[ERC-7730 Analyzer](https://github.com/LedgerHQ/erc7730-analyzer)** — an LLM-based service operated by Ledger that reviews the descriptor against the contract's actual behavior (by default in multi-agent mode with high reasoning effort, optionally capturing device screenshots).
-
-The analyzer posts a per-descriptor report as a PR comment and uploads full reports as workflow artifacts:
-
-- ✅ **No critical issues** — the check passes.
-- ❌ **Critical issues found** — the check fails and blocks the merge until the issues are resolved.
-- ⚠️ **Analysis failure** — the analysis itself failed; check the workflow logs.
-
-Maintainers can also trigger the analyzer manually (`workflow_dispatch`) with a choice of analysis mode, model, reasoning effort, and screenshot device. See [Reviewing pull requests](./reviewing-prs.md) for how to weigh the analyzer's findings during review.
 
 ## What the linter checks in detail
 

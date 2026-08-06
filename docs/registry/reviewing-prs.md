@@ -35,14 +35,7 @@ Every added or changed descriptor must come with a `testsv2/<descriptor-name>.te
 - Check the results comment: every test case must pass on all reference implementations (all ✅ in the table).
 - Check the test cases themselves: do they cover each function/message the descriptor formats? Do the `expected` blocks actually describe what the transaction does? A test that expects a wrong rendering is worse than no test.
 
-### 4. Check the AI analyzer report
-
-For calldata descriptors, the [ERC-7730 Analyzer](./ci-checks.md#ai-analysis) posts an automated review comment. Treat it as an assistant, not an authority — we are still evaluating how helpful it is in practice:
-
-- **Critical findings** block the merge; read them and verify against the contract source whether they are real before asking the submitter for changes (or dismissing them with a comment explaining why they're false positives).
-- A green analyzer result is **not** a substitute for human review of intents and fields.
-
-### 5. No descriptor or index entry of another project is overwritten
+### 4. No descriptor or index entry of another project is overwritten
 
 The generated index files map each `(chainId, address)` to a descriptor, so two descriptors claiming the same deployment collide — a malicious or careless PR could effectively hijack how another project's contract is displayed.
 
@@ -54,7 +47,7 @@ The generated index files map each `(chainId, address)` to a descriptor, so two 
 A dedicated CI check that fails when a PR's descriptors would overwrite another descriptor's index entry is planned. Until it exists, this is a manual review step.
 :::
 
-### 6. Registry structure is kept
+### 5. Registry structure is kept
 
 The [repository layout](https://github.com/ethereum/clear-signing-erc7730-registry#registry-structure) is directory-based, and PRs must follow it:
 
