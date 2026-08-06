@@ -66,7 +66,7 @@ const config: Config = {
               "custom_edit_url: https://github.com/sourcifyeth/clear-signing/blob/main/GUIDE.md",
               "---",
               "",
-              ":::info Rendered from the source repository",
+              ":::info[Rendered from the source repository]",
               "This page is fetched at build time from [`GUIDE.md` in `sourcifyeth/clear-signing`](https://github.com/sourcifyeth/clear-signing/blob/main/GUIDE.md). To suggest changes, edit that file.",
               ":::",
               "",
