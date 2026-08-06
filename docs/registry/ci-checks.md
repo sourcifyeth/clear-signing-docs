@@ -41,15 +41,13 @@ flowchart TD
     MERGE --> POST["After merge on master:<br/>full registry lint · index regeneration ·<br/>weekly auto-format · spec sync"]
 ```
 
-## Checks on every pull request
-
-### 🏷️ Pull request labels
+## 🏷️ Pull request labels
 
 *Workflow: `pull_request_labels.yml`*
 
 Labels are applied automatically based on which paths the PR touches (`descriptors`, `specifications`, `documentation`, `ci`, `tools`), and the check requires **at least one** of these labels to be present. For a typical descriptor submission you don't need to do anything — changing files under `registry/` gets you the `descriptors` label automatically.
 
-### 🔎 Validate descriptors (linting)
+## 🔎 Validate descriptors (linting)
 
 *Workflow: `pull_request.yml` → job `validate descriptors`*
 
@@ -59,9 +57,66 @@ Collects the changed descriptor files (`registry/**/eip712-*.json` and `registry
 erc7730 lint <changed files> --gha
 ```
 
-The registry uses the **v2 descriptor format**, so the v2 lint pipeline applies (auto-detected from the descriptors' `$schema`). Errors fail the check; warnings are annotated on the PR but do not fail it. What each lint step does is described [below](#what-the-linter-checks-in-detail).
+The registry uses the **v2 descriptor format**, so the v2 lint pipeline applies (auto-detected from the descriptors' `$schema`). Errors fail the check; warnings are annotated on the PR but do not fail it.
 
-### 🔎 Validate JSON schemas
+### What the linter checks in detail
+
+`erc7730 lint` ([python-erc7730](https://github.com/LedgerHQ/python-erc7730), v2 pipeline) processes every descriptor in four phases — parsing, resolution, then a series of semantic linters:
+
+#### 0. Parsing and resolution
+
+Before any linter runs, the file must **load into the v2 descriptor model** (structural validation, stricter than the JSON schema alone) and **resolve**: `$ref` includes and shared/common files are inlined, constants substituted, and display paths parsed. Errors here (invalid function signatures in format keys, unresolvable references, malformed paths) fail the lint immediately.
+
+#### 1. Display field validation (`ValidateDisplayFieldsLinter`)
+
+For **calldata (contract) descriptors**, the linter fetches the contract's reference ABI from **Sourcify** (or Etherscan as fallback) for the declared deployments, then cross-checks the descriptor against it:
+
+- **Error — invalid display field:** a display field's `path` does not exist among the function's ABI parameters. This catches typos and stale descriptors.
+- **Warning — missing display field:** an ABI parameter has no display field. Every parameter should either be displayed or consciously excluded.
+- **Warning — unknown selector:** the descriptor formats a function that does not exist in the reference ABI.
+- **Warning — missing display format:** a function exists in the ABI but the descriptor defines no format for it (selector exhaustiveness — wallets fall back to blind signing for uncovered selectors).
+
+If the contract looks like a **proxy**, ABI-based validation is skipped (with an info message). If no ABI can be fetched for any deployment, the linter warns and skips this validation — which is why contracts should be [verified on Sourcify](https://sourcify.dev) before submitting.
+
+For EIP-712 descriptors this linter is a no-op (there is no embedded schema to check against in v2 — the format keys themselves are validated by the next linter).
+
+#### 2. EIP-712 key validation (`ValidateEIP712KeysLinter`)
+
+For **EIP-712 descriptors**, the `display.formats` keys must be exact [`encodeType`](https://eips.ethereum.org/EIPS/eip-712#definition-of-encodetype) strings (e.g. `Permit(address spender,uint256 value,uint256 nonce,uint64 deadline)`). Wallets match descriptors by the keccak256 hash of this string, so **any deviation means the descriptor silently never applies**. The linter checks, purely syntactically:
+
+- the key matches the `encodeType` grammar exactly — no stray whitespace, balanced parentheses, members written as `type name` with single spaces;
+- no struct type or member is defined twice;
+- every member type is a valid EIP-712 atomic type (`uint8`–`uint256`, `bytes1`–`bytes32`, `bool`, `address`, `string`, `bytes` — the `uint`/`int`/`byte` aliases are **not** valid) or a struct defined in the key;
+- every struct defined in the key is actually referenced from the primary type;
+- referenced struct definitions are appended to the primary type **sorted by name**.
+
+#### 3. Transaction type classification (`ClassifyTransactionTypeLinter`)
+
+A safety net for common risky transaction types. The linter classifies the descriptor — for EIP-712, a format key containing `permit` marks it as a **Permit**; for contracts, classification runs on the fetched ABI — and then checks that the fields users need to see are actually displayed. For a Permit it warns if no **spender**, **amount**, or **expiration/deadline** field is displayed.
+
+#### 4. Display length limits (`ValidateMaxLengthLinter`)
+
+Hardware wallet screens are small. This linter warns when strings may be truncated on Ledger devices:
+
+| What | Checked against |
+|---|---|
+| `metadata.owner`, `info.legalName`, `info.url`, contract `id` | creator/contract name limits |
+| `intent`, `interpolatedIntent`, format `$id` | operation type limit |
+| field `label`s (including nested groups) | field name limit |
+| enum entries | enum value limit |
+
+All of these are warnings — they don't fail CI, but shorter is better.
+
+### Running the linter locally
+
+Don't wait for CI — validate before you push:
+
+```bash
+pip install erc7730          # requires Python 3.12+, or: uvx erc7730 ...
+erc7730 lint registry/<entity>/calldata-MyContract.json
+```
+
+## 🔎 Validate JSON schemas
 
 *Workflow: `pull_request.yml` → job `validate JSON schemas`*
 
@@ -94,63 +149,6 @@ The workflow has three stages:
 :::note
 A third set of runners — Ledger device tests producing device screenshots — exists in the workflow but is currently disabled because it depends on a private Ledger repository. The Sourcify and Rust runners cover clear-signing tests in the meantime.
 :::
-
-## What the linter checks in detail
-
-`erc7730 lint` ([python-erc7730](https://github.com/LedgerHQ/python-erc7730), v2 pipeline) processes every descriptor in four phases — parsing, resolution, then a series of semantic linters:
-
-### 0. Parsing and resolution
-
-Before any linter runs, the file must **load into the v2 descriptor model** (structural validation, stricter than the JSON schema alone) and **resolve**: `$ref` includes and shared/common files are inlined, constants substituted, and display paths parsed. Errors here (invalid function signatures in format keys, unresolvable references, malformed paths) fail the lint immediately.
-
-### 1. Display field validation (`ValidateDisplayFieldsLinter`)
-
-For **calldata (contract) descriptors**, the linter fetches the contract's reference ABI from **Sourcify** (or Etherscan as fallback) for the declared deployments, then cross-checks the descriptor against it:
-
-- **Error — invalid display field:** a display field's `path` does not exist among the function's ABI parameters. This catches typos and stale descriptors.
-- **Warning — missing display field:** an ABI parameter has no display field. Every parameter should either be displayed or consciously excluded.
-- **Warning — unknown selector:** the descriptor formats a function that does not exist in the reference ABI.
-- **Warning — missing display format:** a function exists in the ABI but the descriptor defines no format for it (selector exhaustiveness — wallets fall back to blind signing for uncovered selectors).
-
-If the contract looks like a **proxy**, ABI-based validation is skipped (with an info message). If no ABI can be fetched for any deployment, the linter warns and skips this validation — which is why contracts should be [verified on Sourcify](https://sourcify.dev) before submitting.
-
-For EIP-712 descriptors this linter is a no-op (there is no embedded schema to check against in v2 — the format keys themselves are validated by the next linter).
-
-### 2. EIP-712 key validation (`ValidateEIP712KeysLinter`)
-
-For **EIP-712 descriptors**, the `display.formats` keys must be exact [`encodeType`](https://eips.ethereum.org/EIPS/eip-712#definition-of-encodetype) strings (e.g. `Permit(address spender,uint256 value,uint256 nonce,uint64 deadline)`). Wallets match descriptors by the keccak256 hash of this string, so **any deviation means the descriptor silently never applies**. The linter checks, purely syntactically:
-
-- the key matches the `encodeType` grammar exactly — no stray whitespace, balanced parentheses, members written as `type name` with single spaces;
-- no struct type or member is defined twice;
-- every member type is a valid EIP-712 atomic type (`uint8`–`uint256`, `bytes1`–`bytes32`, `bool`, `address`, `string`, `bytes` — the `uint`/`int`/`byte` aliases are **not** valid) or a struct defined in the key;
-- every struct defined in the key is actually referenced from the primary type;
-- referenced struct definitions are appended to the primary type **sorted by name**.
-
-### 3. Transaction type classification (`ClassifyTransactionTypeLinter`)
-
-A safety net for common risky transaction types. The linter classifies the descriptor — for EIP-712, a format key containing `permit` marks it as a **Permit**; for contracts, classification runs on the fetched ABI — and then checks that the fields users need to see are actually displayed. For a Permit it warns if no **spender**, **amount**, or **expiration/deadline** field is displayed.
-
-### 4. Display length limits (`ValidateMaxLengthLinter`)
-
-Hardware wallet screens are small. This linter warns when strings may be truncated on Ledger devices:
-
-| What | Checked against |
-|---|---|
-| `metadata.owner`, `info.legalName`, `info.url`, contract `id` | creator/contract name limits |
-| `intent`, `interpolatedIntent`, format `$id` | operation type limit |
-| field `label`s (including nested groups) | field name limit |
-| enum entries | enum value limit |
-
-All of these are warnings — they don't fail CI, but shorter is better.
-
-### Running the linter locally
-
-Don't wait for CI — validate before you push:
-
-```bash
-pip install erc7730          # requires Python 3.12+, or: uvx erc7730 ...
-erc7730 lint registry/<entity>/calldata-MyContract.json
-```
 
 ## After the merge
 

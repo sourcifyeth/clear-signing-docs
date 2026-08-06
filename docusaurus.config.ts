@@ -169,6 +169,10 @@ const config: Config = {
       darkTheme: prismThemes.dracula,
       additionalLanguages: ["json", "bash", "solidity"],
     },
+    tableOfContents: {
+      minHeadingLevel: 2,
+      maxHeadingLevel: 4,
+    },
   } satisfies Preset.ThemeConfig,
 };
 
