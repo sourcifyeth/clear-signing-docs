@@ -58,6 +58,7 @@ Every changed JSON file under `registry/` and `ercs/` is validated with [`check-
 | Descriptors and shared/common files | `specs/erc7730-v2.schema.json` (or the file's own relative `$schema` if it resolves) |
 | `testsv2/*.tests.json` | `specs/erc7730-tests-v2.schema.json` |
 | legacy `tests/*.tests.json` | `specs/erc7730-tests.schema.json` |
+| `sigs/*` attestation files | skipped — no schema is defined for them yet |
 
 This is a pure structural check — it catches missing required properties, wrong types, and typos in field names before the semantic linting even matters.
 
@@ -65,7 +66,7 @@ This is a pure structural check — it catches missing required properties, wron
 
 *Workflow: `pull_request.yml` → job `validate descriptors`*
 
-Collects the changed descriptor files (`registry/**/eip712-*.json` and `registry/**/calldata-*.json`, excluding test fixtures) and runs the [`erc7730`](https://github.com/LedgerHQ/python-erc7730) linter on them:
+Collects the changed descriptor files (`registry/**/eip712-*.json` and `registry/**/calldata-*.json`, excluding test fixtures and the attestation files under `sigs/` — those share the descriptor name prefix but are not descriptors) and runs the [`erc7730`](https://github.com/LedgerHQ/python-erc7730) linter on them:
 
 ```bash
 erc7730 lint <changed files> --gha
@@ -141,7 +142,7 @@ Each descriptor added or changed in a PR must come with a **test file** at `regi
 The workflow has three stages:
 
 1. **Permission gate.** PRs from branches within the registry repo run tests automatically. PRs from **forks** are untrusted, so a maintainer must add the **`run-tests` label** to the PR first — until then, a bot comment explains that the tests are waiting for maintainer approval. The label triggers only when it is added: after you push new commits, a maintainer has to remove and re-add it to run the tests against the latest state.
-2. **Test detection.** For every changed descriptor, the workflow looks for the matching `testsv2/` file (and vice-versa: a changed test file maps back to its descriptor). If descriptors changed but **no test file exists, the check fails** and a comment asks you to add one.
+2. **Test detection.** For every changed descriptor (attestation files under `sigs/` don't count), the workflow looks for the matching `testsv2/` file (and vice-versa: a changed test file maps back to its descriptor). If descriptors changed but **no test file exists, the check fails** and a comment asks you to add one.
 3. **Execution against reference implementations.** Each (descriptor, test file) pair is run against two independent ERC-7730 implementations:
    - the **Sourcify TypeScript runner** ([`@ethereum-sourcify/clear-signing`](https://github.com/sourcifyeth/clear-signing)), and
    - the **Rust runner** ([`llbartekll/clear-signing`](https://github.com/llbartekll/clear-signing)).
