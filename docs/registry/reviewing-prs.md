@@ -60,25 +60,15 @@ This is a plausibility read, not verification against the contract source — th
 
 This applies **transitively to shared files**: `common-*.json` files and the `ercs/` templates are inlined into descriptors via `includes`, so editing them silently changes every descriptor that includes them — attested ones too, and no CI check catches it. Reject shared-file edits that would alter an attested descriptor; here as well, the change belongs in a new shared file (or a new descriptor version) instead.
 
-### 7. No descriptor or index entry of another project is overwritten
-
-The generated index files map each `(chainId, address)` to a descriptor, so two descriptors claiming the same deployment collide — a malicious or careless PR could effectively hijack how another project's contract is displayed.
-
-- Verify the PR only touches **one entity folder**, and that this entity actually owns the claimed deployments.
-- Check whether any deployment address in the PR (`context.contract.deployments`) is already claimed by **another** entity's descriptor (search the address in `index.calldata.json` / `index.eip712.json` on `master`).
-- Be suspicious of PRs that modify or delete files of a *different* entity than the one they claim to add.
-
-:::note planned
-A dedicated CI check that fails when a PR's descriptors would overwrite another descriptor's index entry is planned. Until it exists, this is a manual review step.
-:::
-
-### 8. The index files are not touched
+### 7. The index files are not touched
 
 `index.calldata.json` and `index.eip712.json` are **generated** — CI regenerates them from the descriptors after the merge, so a descriptor PR should not modify them at all. Question any index diff you see.
 
 The one exception: when a **new descriptor version replaces an attested descriptor** (see [item 6](#6-attested-descriptors-are-not-modified)), the index entry for the affected deployments has to switch from the old file to the new one — changing those specific entries is safe and expected.
 
-### 9. Registry structure is kept
+A CI check that validates the index on every PR and fails when two descriptors claim the same deployment is landing with [#2884](https://github.com/ethereum/clear-signing-erc7730-registry/pull/2884) — index hijacking of another project's contract is then caught automatically.
+
+### 8. Registry structure is kept
 
 The [repository layout](https://github.com/ethereum/clear-signing-erc7730-registry#registry-structure) is directory-based, and PRs must follow it:
 
