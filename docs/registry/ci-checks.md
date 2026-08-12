@@ -16,8 +16,8 @@ flowchart TD
     subgraph static ["Static checks"]
         direction TB
         LBL["🏷️ Pull request labels<br/><small>auto-label by changed paths,<br/>at least one label required</small>"]
-        DESC["🔎 Validate descriptors<br/><small>erc7730 lint on changed files</small>"]
-        SCHEMA["🔎 Validate JSON schemas<br/><small>check-jsonschema against<br/>erc7730-v2 / tests schemas</small>"]
+        DESC["🔎 Validate descriptors<br/><small>lint changed files by<br/>erc7730 python library</small>"]
+        SCHEMA["🔎 Validate JSON schemas<br/><small>check changed files against<br/>descriptor and test schemas</small>"]
         LBL ~~~ DESC ~~~ SCHEMA
     end
 
