@@ -119,7 +119,3 @@ To submit permit support for your token, add a file to `registry/permit/` with y
 ### Non-standard permit variants
 
 Not every token implements the standard message. DAI's permit, for instance, is `Permit(address holder,address spender,uint256 nonce,uint256 expiry,bool allowed)` — a boolean grant/revoke instead of an amount. Because matching is by the format key's hash, such tokens **cannot reuse the standard template's format**: the descriptor needs a format entry keyed by the token's actual `encodeType` string, displaying the fields that matter (e.g. the boolean `allowed` via an `enum` format rendered as "Grant"/"Revoke", and `expiry` as a date).
-
-## Testing token descriptors
-
-Like every registry submission, token and permit descriptors need [reference test cases](./creating-a-descriptor.md#4-write-reference-test-cases) in `testsv2/`. For tokens, make sure to cover at least: a plain `transfer`, a finite `approve`, and a max-value `approve` asserting the rendered `"Unlimited"` message; for permits, a finite-value permit and a max-value/far-deadline one.
