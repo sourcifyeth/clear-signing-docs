@@ -42,6 +42,69 @@ jobs:
           path: build
           retention-days: 7
 
+  preview:
+    name: Preview deploy
+    needs: build
+    # Pull requests only, and only from branches in this repository. A pull
+    # request from a fork gets no secrets, so the upload could not work.
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: site
+          path: build
+
+      # `versions upload` uploads the build but does not serve it to visitors.
+      # The alias gives this pull request a stable hostname of its own.
+      - id: upload
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: versions upload --preview-alias pr-${{ github.event.number }}
+
+      # The action fills deployment-url for `deploy`, not for `versions upload`,
+      # so read the URL out of the command output instead.
+      - id: url
+        env:
+          OUTPUT: ${{ steps.upload.outputs.command-output }}
+          ALIAS: pr-${{ github.event.number }}
+        run: |
+          urls=$(printf '%s\n' "$OUTPUT" | grep -oE 'https://[a-z0-9.-]+\.workers\.dev' || true)
+          url=$(printf '%s\n' "$urls" | grep -m1 -- "$ALIAS-" || true)
+          if [ -z "$url" ]; then
+            url=$(printf '%s\n' "$urls" | head -n 1)
+          fi
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+
+      - name: Comment the preview URL
+        if: steps.url.outputs.url != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          URL: ${{ steps.url.outputs.url }}
+          PR: ${{ github.event.number }}
+        run: |
+          body="Preview deploy for \`${{ github.event.pull_request.head.sha }}\`: $URL
+
+          Uploaded as a Worker version. It does not serve production traffic."
+          # --edit-last keeps one comment per pull request instead of one per push.
+          gh pr comment "$PR" --edit-last --create-if-none --body "$body" \
+            || gh pr comment "$PR" --body "$body"
+
+      - name: Report the preview URL
+        env:
+          URL: ${{ steps.url.outputs.url }}
+        run: |
+          echo "Preview: ${URL:-no URL found in the wrangler output}" >> "$GITHUB_STEP_SUMMARY"
+
   deploy:
     name: Deploy to Cloudflare
     needs: build

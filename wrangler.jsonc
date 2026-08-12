@@ -3,6 +3,10 @@
   // the files that `npm run build` writes into build/.
   "name": "clear-signing-docs",
   "compatibility_date": "2026-08-12",
+  // Preview URLs otherwise default to the value of workers_dev. Set it here so
+  // pull request previews keep working after docs.clearsigning.org is attached
+  // and workers_dev is turned off.
+  "preview_urls": true,
   "assets": {
     "directory": "./build",
     // Docusaurus emits build/404.html — serve it for unknown paths.
