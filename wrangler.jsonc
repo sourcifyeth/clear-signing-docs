@@ -1,0 +1,11 @@
+{
+  // Static-asset-only Worker: there is no server-side code. Cloudflare serves
+  // the files that `npm run build` writes into build/.
+  "name": "clear-signing-docs",
+  "compatibility_date": "2026-08-12",
+  "assets": {
+    "directory": "./build",
+    // Docusaurus emits build/404.html — serve it for unknown paths.
+    "not_found_handling": "404-page"
+  }
+}
