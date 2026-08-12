@@ -31,31 +31,6 @@ Binding to the **implementation address** pins the descriptor to the exact code 
 
 A practical side benefit: the [linter](../registry/ci-checks.md#what-the-linter-checks-in-detail) validates display fields against the ABI fetched from Sourcify, and skips that validation when the deployment address looks like a proxy — bound to the implementation address, the ABI checks actually run against the code being described.
 
-## Writing the descriptor
-
-Concretely, a descriptor for a proxied contract looks like any other — the deployments just list the **implementation** addresses:
-
-```json
-{
-  "$schema": "../../specs/erc7730-v2.schema.json",
-  "context": {
-    "$id": "My Protocol Vault (implementation v2)",
-    "contract": {
-      "deployments": [
-        { "chainId": 1, "address": "0xImplementationAddress" }
-      ]
-    }
-  },
-  "metadata": { "owner": "My Protocol", "info": { "url": "https://myprotocol.xyz" } },
-  "display": { "formats": { "…": {} } }
-}
-```
-
-- Make sure the **implementation contract is verified on Sourcify** — that's the ABI your display formats are validated against.
-- For **diamonds**, apply the same idea per facet: one descriptor per facet, bound to the facet's implementation address.
-- On an upgrade, submit a **new descriptor file** for the new implementation address (the filename carries the version) — don't modify the old one.
-- Reference test cases work unchanged: the `rawTx` in your [testsv2 file](./creating-a-descriptor.md#4-write-reference-test-cases) still targets the proxy address users actually call; runners resolve descriptors the same way wallets do.
-
 ## An improved design is being standardized
 
 There is a draft to improve proxy handling in the specification: [ethereum/ERCs#1738](https://github.com/ethereum/ERCs/pull/1738) adds an **intent mutability** section to ERC-7730. It keeps descriptors matchable at the proxy address but makes the implementation binding explicit and verifiable:
