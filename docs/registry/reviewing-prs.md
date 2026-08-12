@@ -24,7 +24,6 @@ Every added or changed descriptor must come with a `testsv2/<descriptor-name>.te
 - For PRs from forks the tests **only run once a maintainer adds the `run-tests` label**. Skim the changed files first (the label triggers workflows on the PR head), then add the label.
 - The label only triggers when it is **added** — a later push by the author does **not** re-run the tests. After new commits, **remove and re-add the `run-tests` label** to trigger them again; before merging, make sure the test results are from the **latest commit**.
 - Check the results comment: every test case must pass on all reference implementations (all ✅ in the table).
-- Check the test cases themselves: do they cover each function/message the descriptor formats? Do the `expected` blocks actually describe what the transaction does? A test that expects a wrong rendering is worse than no test.
 
 ### 3. Do intents and hidden fields pass a sanity read?
 
