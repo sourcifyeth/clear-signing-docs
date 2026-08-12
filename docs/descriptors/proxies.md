@@ -21,7 +21,7 @@ The [ERC-7730 proxy support section](https://eips.ethereum.org/EIPS/eip-7730) di
 The ERC-7730 specification does not use the recommended way of binding proxies. For security reasons, **all kinds of proxies should be bound to the implementation address** — not only the multi-instantiation case.
 :::
 
-Binding a descriptor to the proxy address means it keeps matching **whatever code the proxy points to next**. After an upgrade, the descriptor still applies and happily renders the intents that were written — and [attested](../auditors/what-audits-do.md) — for the *old* implementation. The displayed intent can silently diverge from the executed behavior, which is precisely the class of attack clear signing exists to prevent. It also conflicts with the registry's trust model: attested descriptors are [immutable](../registry/reviewing-prs.md#6-attested-descriptors-are-not-modified), so "update the descriptor on upgrade" would invalidate the attestation chain on every upgrade.
+Binding a descriptor to the proxy address means it keeps matching **whatever code the proxy points to next**. After an upgrade, the descriptor still applies and happily renders the intents that were written — and [attested](../auditors/what-audits-do.md) — for the *old* implementation. The displayed intent can silently diverge from the executed behavior, which is precisely the class of attack clear signing exists to prevent. It also conflicts with the registry's trust model: attested descriptors are [immutable](../registry/reviewing-prs.md#4-attested-descriptors-are-not-modified), so "update the descriptor on upgrade" would invalidate the attestation chain on every upgrade.
 
 Binding to the **implementation address** pins the descriptor to the exact code that was reviewed:
 
