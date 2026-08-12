@@ -75,9 +75,9 @@ The [repository layout](https://github.com/ethereum/clear-signing-erc7730-regist
 - One entity per PR, all files inside `registry/<entity_name>/`.
 - Descriptors named `calldata-<ContractName>.json` / `eip712-<MessageName>.json`; shared definitions as `common-*.json` (never with a `calldata`/`eip712` prefix); tests under `testsv2/`.
 
-## Optional asks (nice-to-have, not blocking)
+### 9. Ask for optional improvements
 
-Where it makes sense, ask submitters for these improvements — they're optional and should not block an otherwise correct PR:
+Check for these and ask the submitter where they apply. They are not blocking: if the author decides against them, merge the PR anyway.
 
 - **Add `interpolatedIntent`.** A templated one-sentence intent with the field values substituted (e.g. `Swap {amountIn} for {tokenOut}`) gives wallets the recommended single-sentence display form. Descriptors with only a static `intent` still work, but `interpolatedIntent` is the better user experience.
 - **Remove deprecated fields.** Descriptors migrated from the v1 format sometimes still carry fields the v2 format no longer uses — most notably embedded **ABIs** (`context.contract.abi`) and embedded EIP-712 schemas: in v2, ABIs are fetched from Sourcify/Etherscan and EIP-712 format keys are the schema. Ask to drop such leftovers.
