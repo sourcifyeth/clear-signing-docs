@@ -15,28 +15,29 @@ flowchart TD
 
     subgraph static ["Static checks"]
         direction TB
-        LBL["🏷️ Pull request labels<br/><small>auto-label by changed paths,<br/>at least one label required</small>"]
-        DESC["🔎 Validate descriptors<br/><small>lint changed files by<br/>erc7730 python library</small>"]
+        LBL["🏷️ Pull request labels<br/><small>auto-label by changed paths</small>"]
         SCHEMA["🔎 Validate JSON schemas<br/><small>check changed files against<br/>descriptor and test schemas</small>"]
-        LBL ~~~ DESC ~~~ SCHEMA
+        DESC["🔎 Validate descriptors<br/><small>lint affected files by<br/>erc7730 python library</small>"]
+        IDX["🔎 Validate index<br/><small>no two descriptors claim<br/>the same deployment</small>"]
+        NAMES["🔎 Validate file names<br/><small>check files follow<br/>naming conventions</small>"]
+        ATT["🔎 Validate attested descriptors<br/><small>attested descriptors<br/>must not change</small>"]
+        LBL ~~~ SCHEMA ~~~ DESC ~~~ IDX ~~~ NAMES ~~~ ATT
     end
 
     subgraph tests ["Clear Signing Tests"]
         direction TB
-        GATE{"Same-repo PR?<br/><small>fork PRs need the<br/><code>run-tests</code> label</small>"}
-        GATE -- "no label yet" --> WAIT["💬 Comment: waiting for<br/>maintainer approval"]
-        GATE -- "allowed" --> DETECT{"testsv2 files found<br/>for changed descriptors?"}
-        DETECT -- "no" --> MISSING["❌ Comment + check fails:<br/>missing testsv2 file"]
-        DETECT -- "yes" --> RUNTS["Sourcify TypeScript<br/>runner"]
-        DETECT -- "yes" --> RUNRS["Rust runner"]
-        RUNTS --> RESULTS["💬 Results table comment<br/><small>any non-pass fails the check</small>"]
+        DETECT["Detect affected descriptors<br/><small>directly changed, or via a<br/>changed shared file</small>"]
+        DETECT -- "testsv2 file missing" --> MISSING["❌ Require testsv2:<br/>check fails"]
+        DETECT --> RUNTS["Sourcify TypeScript<br/>runner"]
+        DETECT --> RUNRS["Rust runner"]
+        RUNTS --> RESULTS["💬 Results comment<br/><small>a failing case fails the check</small>"]
         RUNRS --> RESULTS
+        RESULTS ~~~ REC["💬 Recommendations comment<br/><small>advisory, non-blocking</small>"]
     end
 
     PR --> LBL
-    PR --> GATE
+    PR --> DETECT
     RESULTS --> MERGE([All green + review → merge])
-    SCHEMA ~~~ MERGE
     static --> MERGE
     MERGE --> POST["After merge on master:<br/><small>full registry lint · index regeneration ·<br/>weekly auto-format · spec sync</small>"]
 ```
@@ -66,11 +67,13 @@ This is a pure structural check — it catches missing required properties, wron
 
 *Workflow: `pull_request.yml` → job `validate descriptors`*
 
-Collects the changed descriptor files (`registry/**/eip712-*.json` and `registry/**/calldata-*.json`, excluding test fixtures and the attestation files under `sigs/` — those share the descriptor name prefix but are not descriptors) and runs the [`erc7730`](https://github.com/LedgerHQ/python-erc7730) linter on them:
+Resolves the descriptors **affected** by the PR and runs the [`erc7730`](https://github.com/LedgerHQ/python-erc7730) linter on them:
 
 ```bash
-erc7730 lint <changed files> --gha
+erc7730 lint <affected descriptors> --gha
 ```
+
+Affected means more than changed: a changed **shared file** (an `ercs/` template or a `common-*.json` file) is inlined into other descriptors via `includes`, so every descriptor whose includes chain contains it is linted too. Shared files are not linted standalone — they are partial descriptors, validated through their includers. Test fixtures and `sigs/` attestation files don't count as descriptors.
 
 The registry uses the **v2 descriptor format**, so the v2 lint pipeline applies (auto-detected from the descriptors' `$schema`). The linter emits findings at two severities: **errors fail the check**, while **warnings** are annotated on the PR but let it pass. Each check below states which one it produces.
 
@@ -133,21 +136,54 @@ pip install erc7730          # requires Python 3.12+, or: uvx erc7730 ...
 erc7730 lint registry/<entity>/calldata-MyContract.json
 ```
 
+## 🔎 Validate index
+
+*Workflow: `pull_request.yml` → job `validate index`*
+
+Rebuilds the registry [index](./reviewing-prs.md) in memory (`generate-index.js --validate`) and fails when it can no longer be generated:
+
+- a `(chainId, address)` deployment is claimed by **more than one** calldata descriptor;
+- two descriptors register the **same EIP-712 `encodeType`** at one address;
+- an `includes` reference cannot be resolved.
+
+This catches descriptor collisions — including a PR hijacking how another project's contract is displayed — *before* the merge; previously they only surfaced afterwards, when the index sync failed on `master`.
+
+## 🔎 Validate file names
+
+*Workflow: `pull_request.yml` → job `validate file names`*
+
+Every file in an entity folder must be named `calldata-*.json`, `eip712-*.json`, or `common-*.json` (with the `tests/`, `testsv2/`, and `sigs/` subfolders having their own naming). Anything else fails the check with an annotation pointing at the [registry structure](https://github.com/ethereum/clear-signing-erc7730-registry#registry-structure) rules.
+
+## 🔎 Validate attested descriptors
+
+*Workflow: `pull_request.yml` → job `validate attested descriptors`*
+
+[Attestations](../descriptors/creating-a-descriptor.md#attestations) bind to the exact content of a descriptor, so an attested descriptor is immutable. This check fails when a PR:
+
+- **changes an attested descriptor** — directly, or transitively by editing a shared file that the attested descriptor `includes`;
+- **deletes or renames an attested descriptor** — the file name is the bond between an attestation under `sigs/` and its descriptor, so an attestation must never be left without its descriptor.
+
+The fix is always the same, and the error message says so: add a **new descriptor file** instead (the file name carries the version). The attestation stays valid for the old descriptor, and an auditor can attest the new one later.
+
 ## Clear Signing Tests (the testing workflow)
 
-*Workflow: `clear-signing-tests.yml`*
+*Workflows: `clear-signing-tests.yml`, `clear-signing-tests-started.yml`, `clear-signing-tests-results.yml`*
 
 Each descriptor added or changed in a PR must come with a **test file** at `registry/<entity>/testsv2/<descriptor-name>.tests.json`, containing sample transactions/messages and the exact display output a correct implementation must render for them (see [Reference test cases](../descriptors/creating-a-descriptor.md#4-write-reference-test-cases)).
 
-The workflow has three stages:
+The workflow runs for **every pull request, forks included** — the test runners consume no secrets, so there is no approval gate anymore. (The only wait is GitHub's standard rule that a first-time contributor's workflow runs need a maintainer's approval.) It works in three stages:
 
-1. **Permission gate.** PRs from branches within the registry repo run tests automatically. PRs from **forks** are untrusted, so a maintainer must add the **`run-tests` label** to the PR first — until then, a bot comment explains that the tests are waiting for maintainer approval. The label triggers only when it is added: after you push new commits, a maintainer has to remove and re-add it to run the tests against the latest state.
-2. **Test detection.** For every changed descriptor (attestation files under `sigs/` don't count), the workflow looks for the matching `testsv2/` file (and vice-versa: a changed test file maps back to its descriptor). If descriptors changed but **no test file exists, the check fails** and a comment asks you to add one.
+1. **Detection.** The workflow resolves the descriptors affected by the PR — directly changed ones, plus every descriptor whose `includes` chain contains a changed shared file — and looks for the matching `testsv2/` file of each (a changed test file likewise maps back to its descriptor).
+2. **Test presence.** Every affected descriptor needs its own test file: the **Require testsv2 files** check fails and lists each descriptor that has none — one descriptor with tests cannot hide another without.
 3. **Execution against reference implementations.** Each (descriptor, test file) pair is run against two independent ERC-7730 implementations:
    - the **Sourcify TypeScript runner** ([`@ethereum-sourcify/clear-signing`](https://github.com/sourcifyeth/clear-signing)), and
    - the **Rust runner** ([`llbartekll/clear-signing`](https://github.com/llbartekll/clear-signing)).
 
-   The rendered output of every test case is compared against the `expected` block of the test file. A results table is posted (and kept up to date) as a PR comment — one row per test case, one column per implementation. **Any case that does not pass on any runner fails the check**, with an expected-vs-got diff in the comment's details section.
+   The rendered output of every test case is compared against the `expected` block of the test file, and **a case that does not pass fails the runner's job** — the checks themselves give the verdict.
+
+The results are also posted as a PR comment. When a run starts, a "⏳ tests are queued" note appears for the new commit; when it finishes, the note is replaced by a results table — one row per test case, one column per implementation, with expected-vs-got diffs for failures. (The comment is posted from the base repository after the run, because a fork's own run has a read-only token.) Every push re-runs the tests and refreshes the comment automatically.
+
+Alongside the results, a separate advisory **recommendations comment** lists optional improvements for the changed descriptors: display formats without an `interpolatedIntent`, and the deprecated `context.contract.abi` / `context.eip712.schemas` fields. These are suggestions, not errors — they don't block the merge.
 
 :::note
 A third set of runners — Ledger device tests producing device screenshots — exists in the workflow but is currently disabled because it depends on a private Ledger repository. The Sourcify and Rust runners cover clear-signing tests in the meantime.
