@@ -19,7 +19,7 @@ flowchart TD
         SCHEMA["🔎 Validate JSON schemas<br/><small>check changed files against<br/>descriptor and test schemas</small>"]
         DESC["🔎 Validate descriptors<br/><small>lint affected files by<br/>erc7730 python library</small>"]
         IDX["🔎 Validate index<br/><small>no two descriptors claim<br/>the same deployment</small>"]
-        NAMES["🔎 Validate file names<br/><small>calldata- / eip712- / common-</small>"]
+        NAMES["🔎 Validate file names<br/><small>check files follow<br/>naming conventions</small>"]
         ATT["🔎 Validate attested descriptors<br/><small>attested descriptors<br/>must not change</small>"]
         LBL ~~~ SCHEMA ~~~ DESC ~~~ IDX ~~~ NAMES ~~~ ATT
     end
