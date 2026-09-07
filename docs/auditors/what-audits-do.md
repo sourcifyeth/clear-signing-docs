@@ -5,7 +5,7 @@ title: What audits do
 
 # What audits do
 
-The [PR review](../registry/reviewing-prs.md) that gates the registry is deliberately short and basic. The real trust layer is the **audit**: an independent auditor verifies a merged descriptor in depth and publishes a cryptographic **attestation** of the exact content they reviewed. **Wallets must only use attested descriptors**, so a descriptor without attestations exists in the registry but shouldn't reach users yet.
+The [PR review](../registry/reviewing-prs.mdx) that gates the registry is deliberately short and basic. The real trust layer is the **audit**: an independent auditor verifies a merged descriptor in depth and publishes a cryptographic **attestation** of the exact content they reviewed. **Wallets must only use attested descriptors**, so a descriptor without attestations exists in the registry but shouldn't reach users yet.
 
 ## The audit
 

@@ -16,7 +16,7 @@ npm run build    # static output in build/
 npm run serve    # preview the production build
 ```
 
-Two pages render remote GitHub documents **in the browser at page-load time** (via the `RemoteMarkdown` component in `src/components/`): the TypeScript SDK guide (`GUIDE.md` from sourcifyeth/clear-signing) and the auditor guide (`auditors/README.md` from the registry). Their content is not part of the build — to change it, edit the source repositories.
+Three pages render remote GitHub documents **in the browser at page-load time** (via the `RemoteMarkdown` component in `src/components/`): the TypeScript SDK guide (`GUIDE.md` from sourcifyeth/clear-signing), and the auditor guide (`auditors/README.md`) and PR review guidelines (`docs/REVIEWING.md`) from the registry. Their content is not part of the build — to change it, edit the source repositories.
 
 ## Structure
 
