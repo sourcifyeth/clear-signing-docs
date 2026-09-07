@@ -140,7 +140,7 @@ erc7730 lint registry/<entity>/calldata-MyContract.json
 
 *Workflow: `pull_request.yml` → job `validate index`*
 
-Rebuilds the registry [index](./reviewing-prs.md) in memory (`generate-index.js --validate`) and fails when it can no longer be generated:
+Rebuilds the registry [index](https://github.com/ethereum/clear-signing-erc7730-registry#index-files) in memory (`generate-index.js --validate`) and fails when it can no longer be generated:
 
 - a `(chainId, address)` deployment is claimed by **more than one** calldata descriptor;
 - two descriptors register the **same EIP-712 `encodeType`** at one address;

@@ -3,15 +3,14 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
 interface Props {
-  /** Raw markdown URL to fetch (e.g. raw.githubusercontent.com). */
-  url: string;
-  /** Human-facing page of the same document, linked from the error state. */
-  sourceUrl: string;
   /**
-   * Base URL that repo-relative links in the fetched markdown are resolved
-   * against (e.g. the GitHub blob/ URL of the document's directory).
+   * GitHub page of the markdown document to render, e.g.
+   * https://github.com/<owner>/<repo>/blob/<ref>/<path>.md
+   *
+   * The raw content URL and the base for resolving the document's
+   * repo-relative links are derived from it.
    */
-  linkBase: string;
+  sourceUrl: string;
   /**
    * Drop the document's leading `# Title` line so it doesn't duplicate the
    * page title provided by the docs frontmatter.
@@ -19,22 +18,31 @@ interface Props {
   stripTitle?: boolean;
 }
 
+const BLOB_URL_PATTERN = /^https:\/\/github\.com\/([^/]+)\/([^/]+)\/blob\/(.+)$/;
+
 /**
- * Fetches a markdown document in the browser when the page loads and renders
- * it, showing a spinner while the request is in flight.
+ * Fetches a markdown document from GitHub in the browser when the page loads
+ * and renders it, showing a spinner while the request is in flight.
  */
 export default function RemoteMarkdown({
-  url,
   sourceUrl,
-  linkBase,
   stripTitle = false,
 }: Props): ReactNode {
   const [content, setContent] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
 
+  const match = sourceUrl.match(BLOB_URL_PATTERN);
+  if (match === null) {
+    throw new Error(`Not a GitHub blob URL: ${sourceUrl}`);
+  }
+  const [, owner, repo, refAndPath] = match;
+  const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${refAndPath}`;
+  // The document's directory — relative links resolve against it.
+  const linkBase = sourceUrl.slice(0, sourceUrl.lastIndexOf("/") + 1);
+
   useEffect(() => {
     let cancelled = false;
-    fetch(url)
+    fetch(rawUrl)
       .then((res) => {
         if (!res.ok) {
           throw new Error(`HTTP ${res.status}`);
@@ -49,11 +57,11 @@ export default function RemoteMarkdown({
         if (stripTitle) {
           processed = processed.replace(/^\s*# .*\n/, "");
         }
-        // Rewrite repo-relative links (e.g. src/types.ts, DECRYPTION.md) to
-        // absolute URLs on the source repository so they keep working here.
+        // Rewrite repo-relative links (e.g. src/types.ts, ../auditors/README.md)
+        // to absolute URLs on the source repository so they keep working here.
         processed = processed.replace(
           /\]\((?!https?:\/\/|#|mailto:)([^)]+)\)/g,
-          `](${linkBase}$1)`
+          (_, target: string) => `](${new URL(target, linkBase).href})`
         );
         setContent(processed);
       })
@@ -65,7 +73,7 @@ export default function RemoteMarkdown({
     return () => {
       cancelled = true;
     };
-  }, [url, linkBase, stripTitle]);
+  }, [rawUrl, linkBase, stripTitle]);
 
   if (failed) {
     return (
