@@ -28,6 +28,7 @@ flowchart TD
         direction TB
         DETECT["Detect affected descriptors<br/><small>directly changed, or via a<br/>changed shared file</small>"]
         DETECT -- "testsv2 file missing" --> MISSING["❌ Require testsv2:<br/>check fails"]
+        DETECT --> COV["Check test coverage<br/><small>every formatted function<br/>needs a test</small>"]
         DETECT --> RUNTS["Sourcify TypeScript<br/>runner"]
         DETECT --> RUNRS["Rust runner"]
         RUNTS --> RESULTS["💬 Results comment<br/><small>a failing case fails the check</small>"]
@@ -175,7 +176,8 @@ The workflow runs for **every pull request, forks included** — the test runner
 
 1. **Detection.** The workflow resolves the descriptors affected by the PR — directly changed ones, plus every descriptor whose `includes` chain contains a changed shared file — and looks for the matching `testsv2/` file of each (a changed test file likewise maps back to its descriptor).
 2. **Test presence.** Every affected descriptor needs its own test file: the **Require testsv2 files** check fails and lists each descriptor that has none — one descriptor with tests cannot hide another without.
-3. **Execution against reference implementations.** Each (descriptor, test file) pair is run against two independent ERC-7730 implementations:
+3. **Test coverage.** A test file that exists is not enough: the **Check test coverage** job verifies that **every function a calldata descriptor formats is actually exercised by a test** (see [below](#test-coverage-every-function-needs-a-test)).
+4. **Execution against reference implementations.** Each (descriptor, test file) pair is run against two independent ERC-7730 implementations:
    - the **Sourcify TypeScript runner** ([`@ethereum-sourcify/clear-signing`](https://github.com/sourcifyeth/clear-signing)), and
    - the **Rust runner** ([`llbartekll/clear-signing`](https://github.com/llbartekll/clear-signing)).
 
@@ -184,6 +186,23 @@ The workflow runs for **every pull request, forks included** — the test runner
 The results are also posted as a PR comment. When a run starts, a "⏳ tests are queued" note appears for the new commit; when it finishes, the note is replaced by a results table — one row per test case, one column per implementation, with expected-vs-got diffs for failures. (The comment is posted from the base repository after the run, because a fork's own run has a read-only token.) Every push re-runs the tests and refreshes the comment automatically.
 
 Alongside the results, a separate advisory **recommendations comment** lists optional improvements for the changed descriptors: display formats without an `interpolatedIntent`, and the deprecated `context.contract.abi` / `context.eip712.schemas` fields. These are suggestions, not errors — they don't block the merge.
+
+### Test coverage: every function needs a test
+
+*Job: `check-test-coverage` — script `check-selector-coverage.js`*
+
+For each affected **calldata** descriptor, the job resolves its `includes`, derives the 4-byte selector of every `display.formats` key, and reads the selector from the first four bytes of the calldata of every `rawTx` in the paired test file. A function whose selector no test calls fails the check, with an annotation naming the uncovered signatures and selectors. EIP-712 descriptors have no selectors and are skipped.
+
+The same job also fails when:
+
+- a test's `rawTx` cannot be decoded, or a test has none;
+- a test calls a selector that **no** format of the descriptor matches;
+- a format key is not a valid function signature;
+- the test file's `descriptor` field doesn't point back at the descriptor its file name pairs it with — which would otherwise let a fixture copied from another descriptor count shared functions as covered.
+
+The gaps are listed in the results comment as well, so you can see which functions still need a test without opening the logs.
+
+In short: **write at least one test case per function you declare.** If a function is not worth a test, consider whether it belongs in `display.formats` at all — wallets fall back to opaque signing for the selectors you leave out.
 
 :::note
 A third set of runners — Ledger device tests producing device screenshots — exists in the workflow but is currently disabled because it depends on a private Ledger repository. The Sourcify and Rust runners cover clear-signing tests in the meantime.
