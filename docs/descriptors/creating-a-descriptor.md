@@ -125,7 +125,7 @@ Each descriptor must come with a test file at `registry/<entity_name>/testsv2/<d
 }
 ```
 
-Guidelines: at least one test per function/message type, prefer real transactions (`rawTx` is the raw **unsigned** transaction), give every case a unique `description`, and cover edge cases (max values, zero values, special addresses). The `dataProvider` block supplies mock token metadata and address names so tests run without network access. Full field reference: [registry README](https://github.com/ethereum/clear-signing-erc7730-registry#reference-test-cases).
+Guidelines: **at least one test per function** — CI [checks that every function your descriptor formats is called by some test's `rawTx`](../registry/ci-checks.md#test-coverage-every-function-needs-a-test) — prefer real transactions (`rawTx` is the raw **unsigned** transaction), give every case a unique `description`, and cover edge cases (max values, zero values, special addresses). The `dataProvider` block supplies mock token metadata and address names so tests run without network access. Full field reference: [registry README](https://github.com/ethereum/clear-signing-erc7730-registry#reference-test-cases).
 
 ## 5. Submit the pull request
 
